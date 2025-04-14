@@ -60,7 +60,7 @@ public:
             size_t start = STRIDE * pod_id();
             size_t step = STRIDE * num_pods();
             size_t end = size();
-            cello::foreach(start, end, step, [this, f](size_t i){
+            cello::foreach<cello::serial>(start, end, step, [this, f](size_t i){
                 size_t start = i;
                 size_t stop = i + STRIDE;
                 if (stop > size()) {

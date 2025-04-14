@@ -169,6 +169,8 @@ int cello_main(int argc, char *argv[])
 {
     dbg("A: %d rows, %d columns, %d non-zeros\n", A.rows(), A.cols(), A.nnz());
     dbg("B: %d rows, %d columns, %d non-zeros\n", B.rows(), B.cols(), B.nnz());
+    bsg_print_hexadecimal(0xA);
+    bsg_fence();
     C_product.foreach([](int i, partial_table *& result) {
         partial_table *accum = static_cast<partial_table*>(cello::allocate(sizeof(partial_table)));
         new (accum) partial_table();
@@ -212,7 +214,8 @@ int cello_main(int argc, char *argv[])
         }
         result = accum;
     });
-
+    bsg_print_hexadecimal(0xB);
+    bsg_fence();
     cello::on_every_pod([](){
         exclusive_scan
             (C_product.data(),
@@ -231,7 +234,8 @@ int cello_main(int argc, char *argv[])
             }
         }
     });
-
+    bsg_print_hexadecimal(0xC);
+    bsg_fence();
     C_product.foreach([](index_type i, partial_table * nonzeros) {
         auto [C_idx_p, _, C_val_p, __] = C.inner_indices_values_range_lcl(i);
 #ifdef USE_RB_TREE
@@ -250,5 +254,7 @@ int cello_main(int argc, char *argv[])
         }
 #endif
     });
+    bsg_print_hexadecimal(0xD);
+    bsg_fence();
     return 0;
 }
