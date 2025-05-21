@@ -4,6 +4,7 @@
 #include <util/backoff.hpp>
 #include <atomic>
 #include <algorithm>
+#include "bsg_manycore_atomic.h"
 namespace util
 {
 /**
@@ -68,23 +69,33 @@ public:
     /**
      * @brief constructor
      */
-    tile_lock();
+    tile_lock() {}
 
     /**
      * @brief acquire the lock
      */
-    void acquire();
+    void acquire() {
+        int *lp = reinterpret_cast<int*>(this);
+        exponential_backoff<16>([=]() { return bsg_amoswap(lp, 1) == 1; });
+    }
 
     /**
      * @brief try to acquire the lock
      * return true if the lock is acquired
      */
-    bool try_acquire();
+    bool try_acquire() {
+        int *lp = reinterpret_cast<int*>(this);
+        int l = bsg_amoswap(lp, 1);
+        return l == 0;
+    }
 
     /**
      * @brief release the lock
      */
-    void release();
+    void release() {
+        int *lp = reinterpret_cast<int*>(this);
+        bsg_amoswap_rl(lp, 0);
+    }
 
     FIELD(lock_ptr, global_this); //!< global this
 };
