@@ -7,6 +7,7 @@
 #include <cello/thread_id.hpp>
 #include <cello/pointer.hpp>
 #include <cello/delegate_queue.hpp>
+#include <cello/joiner.hpp>
 #include <global_pointer/global_pointer.hpp>
 #include <bsg_manycore.h>
 #include <bsg_manycore.hpp>
@@ -155,6 +156,28 @@ void schedule()
         //bsg_print_int(1000000 + victim_id*1000 + my::id());            
         execute_task(victim_id, stolen);
     }
+}
+
+
+/**
+ * @brief check that all children have joined
+ */
+bool n_child_joiner::joined() const {
+    return ready_->load() == children_;
+}
+
+/**
+ * @brief check that all children have joined
+ */
+bool three_child_joiner::joined() const {
+    return ready_ == 0x00ffffff;
+}
+
+/**
+ * @brief join has completed
+ */
+bool one_child_joiner::joined() const {
+    return ready();
 }
 
 /**

@@ -49,7 +49,7 @@ public:
     /**
      * join has completed
      */
-    bool joined() const override { return ready(); }
+    bool joined() const override;
 
     /**
      * returns a created child
@@ -97,6 +97,16 @@ public:
 
     FIELD(global_pointer<one_child_joiner>, parent); //!< pointer to parent
 };
+
+
+/**
+ * returns a created child
+ */
+inline single_child one_child_joiner::make_child() {
+    global_pointer<one_child_joiner> p = global_pointer<one_child_joiner>::onPodXY(my::pod_x(), my::pod_y(), this);
+    return single_child(p);
+}
+
 }
 
 namespace cello
@@ -140,9 +150,8 @@ public:
     /**
      * @brief check that all children have joined
      */
-    bool joined() const override {
-        return ready_->load() == children_;
-    }
+    bool joined() const override;
+
     std::atomic<int>* ready_;
     int children_ = 0;
 };
@@ -171,6 +180,15 @@ public:
     }
     global_pointer<n_child_joiner> parent_;
 };
+
+/**
+ * make a new child
+ */
+inline nth_child n_child_joiner::make_child() {
+    children_++;
+    return nth_child(global_pointer<n_child_joiner>::onPodXY(my::pod_x(), my::pod_y(), this));
+}
+
 }
 
 namespace cello
@@ -190,9 +208,7 @@ public:
     /**
      * @brief check that all children have joined
      */
-    bool joined() const override {
-        return ready_ == 0x00ffffff;
-    }
+    bool joined() const override;
 
     union {
         uint32_t ready_      = 0;
@@ -213,5 +229,30 @@ public:
     }
     global_pointer<char> ready_;
 };
+
+/**
+ * make a new child
+ */
+inline triplet_child three_child_joiner::make_child() {
+    return triplet_child(global_pointer<char>(&this->child_ready_[children_made_++]));
 }
+
+}
+
+inline void bsg_global_pointer::reference<cello::one_child_joiner>::increment_ready_count() {
+    register cello::one_child_joiner *p = reinterpret_cast<cello::one_child_joiner*>(addr().raw());
+    {
+        pod_address_guard grd(addr().ext().pod_addr());
+        p->increment_ready_count();
+    }
+}
+
+inline void bsg_global_pointer::reference<cello::n_child_joiner>::increment_ready_count() {
+    register cello::n_child_joiner *p = reinterpret_cast<cello::n_child_joiner*>(addr().raw());
+    {
+        pod_address_guard grd(addr().ext().pod_addr());
+        p->increment_ready_count();
+    }
+}
+
 #endif
