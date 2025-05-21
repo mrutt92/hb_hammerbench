@@ -46,7 +46,15 @@ RISCV_CCPPFLAGS += -lstdc++
 RISCV_LDFLAGS   += -lstdc++
 
 # kernel sources
-CELLO_LIB_SOURCES := $(wildcard $(HB_HAMMERBENCH_PATH)/lib/cello/*.cpp)
+#CELLO_LIB_SOURCES := $(wildcard $(HB_HAMMERBENCH_PATH)/lib/cello/*.cpp)
+CELLO_LIB_SOURCES += $(HB_HAMMERBENCH_PATH)/lib/cello/cello_start.cpp
+CELLO_LIB_SOURCES += $(HB_HAMMERBENCH_PATH)/lib/cello/cello_init.cpp
+CELLO_LIB_SOURCES += $(HB_HAMMERBENCH_PATH)/lib/cello/cello_delegate_queue.cpp
+CELLO_LIB_SOURCES += $(HB_HAMMERBENCH_PATH)/lib/cello/cello_allocator.cpp
+CELLO_LIB_SOURCES += $(HB_HAMMERBENCH_PATH)/lib/cello/cello_thread_id.cpp
+CELLO_LIB_SOURCES += $(HB_HAMMERBENCH_PATH)/lib/cello/cello_scheduler.cpp
+
+
 CELLO_LIB_OBJECTS := $(CELLO_LIB_SOURCES:.cpp=.rvo)
 CELLO_LIB_OBJECTS := $(foreach obj,$(CELLO_LIB_OBJECTS),$(notdir $(obj)))
 
