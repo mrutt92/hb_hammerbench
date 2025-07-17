@@ -94,8 +94,9 @@ public:
             size_t start = STRIDE * pod_id();
             size_t step = STRIDE * num_pods();
             size_t end = size();
+            value_pointer _data = this->data();
             cello::foreach<sched>
-                (start, end, step, grain, [this, f, end](size_t i) {
+                (start, end, step, grain, [this, _data, f, end](size_t i) {
                 size_t start = i;
                 size_t stop = i + STRIDE;
                 size_t sz = end;
@@ -104,7 +105,7 @@ public:
                     stop = sz;
                 }
                 for (size_t j = start; j < stop; j++) {
-                    f(j, this->local(j));
+                    f(j, _data[this->lcl(j)]);
                 }
             });
             //bsg_print_int(2000000+cello::my::pod_id());
